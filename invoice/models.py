@@ -50,17 +50,19 @@ class InvoiceDetail(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.SET_NULL, blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
     amount = models.IntegerField(default=1)
+    cost_price = models.FloatField(default=0)  # Stored at time of sale
+    selling_price = models.FloatField(default=0)  # Stored at time of sale
 
     @property
     def get_total_bill(self):
         """Total sale amount for this product in the invoice"""
-        if self.product:
-            return float(self.product.selling_price) * float(self.amount)
+        if self.selling_price:
+            return float(self.selling_price) * float(self.amount)
         return 0
 
     @property
     def get_profit(self):
         """Profit for this product in the invoice"""
-        if self.product:
-            return (float(self.product.selling_price) - float(self.product.cost_price)) * float(self.amount)
+        if self.selling_price:
+            return (float(self.selling_price) - float(self.cost_price)) * float(self.amount)
         return 0

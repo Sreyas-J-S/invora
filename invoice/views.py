@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 from utils.filehandler import handle_file_upload
 from .forms import *
@@ -25,6 +26,7 @@ def getTotalIncome():
 # -------------------
 # Dashboard
 # -------------------
+@login_required
 def base(request):
     total_product = Product.objects.count()
     total_invoice = Invoice.objects.count()
@@ -40,6 +42,7 @@ def base(request):
 # -------------------
 # Create Product
 # -------------------
+@login_required
 def create_product(request):
     product = ProductForm()
     if request.method == "POST":
@@ -55,6 +58,7 @@ def create_product(request):
     return render(request, "invoice/create_product.html", context)
 
 
+@login_required
 def view_product(request):
     product = Product.objects.filter(product_is_delete=False)
     context = {
@@ -63,6 +67,7 @@ def view_product(request):
     return render(request, "invoice/view_product.html", context)
 
 
+@login_required
 def edit_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     form = ProductForm(instance=product)
@@ -80,6 +85,7 @@ def edit_product(request, pk):
     return render(request, "invoice/create_product.html", context)
 
 
+@login_required
 def delete_product(request, pk):
     product = get_object_or_404(Product, pk=pk)
     product.product_is_delete = True
@@ -91,6 +97,7 @@ def delete_product(request, pk):
 # -------------------
 # Create Invoice
 # -------------------
+@login_required
 def create_invoice(request):
     form = InvoiceForm()
     formset = InvoiceDetailFormSet()
@@ -108,7 +115,13 @@ def create_invoice(request):
                     product = f.cleaned_data.get("product")
                     amount = f.cleaned_data.get("amount")
                     if product and amount:
-                        detail = InvoiceDetail(invoice=invoice, product=product, amount=amount)
+                        detail = InvoiceDetail(
+                            invoice=invoice,
+                            product=product,
+                            amount=amount,
+                            cost_price=product.cost_price,
+                            selling_price=product.selling_price
+                        )
                         detail.save()
                         total += detail.get_total_bill
 
@@ -124,6 +137,7 @@ def create_invoice(request):
     return render(request, "invoice/create_invoice.html", context)
 
 
+@login_required
 def view_invoice(request):
     invoices = Invoice.objects.all().order_by("-date")
     context = {
@@ -132,6 +146,7 @@ def view_invoice(request):
     return render(request, "invoice/view_invoice.html", context)
 
 
+@login_required
 def view_invoice_detail(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     invoice_detail = InvoiceDetail.objects.filter(invoice=invoice)
@@ -145,6 +160,7 @@ def view_invoice_detail(request, pk):
     return render(request, "invoice/view_invoice_detail.html", context)
 
 
+@login_required
 def delete_invoice(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     invoice_detail = InvoiceDetail.objects.filter(invoice=invoice)
@@ -164,6 +180,7 @@ def delete_invoice(request, pk):
     return render(request, "invoice/delete_invoice.html", context)
 
 
+@login_required
 def monthly_profit(request):
     monthly_stats = InvoiceDetail.objects.filter(
         invoice__isnull=False,
@@ -172,7 +189,7 @@ def monthly_profit(request):
         month=TruncMonth('invoice__date')
     ).values('month').annotate(
         profit=Sum(
-            (F('product__selling_price') - F('product__cost_price')) * F('amount'),
+            (F('selling_price') - F('cost_price')) * F('amount'),
             output_field=FloatField()
         )
     ).order_by('month')
@@ -195,6 +212,7 @@ def monthly_profit(request):
     return render(request, 'invoice/monthly_profit.html', context)
 
 
+@login_required
 def download_all(request):
     # Get all invoices
     invoices = Invoice.objects.all()
@@ -222,3 +240,20 @@ def download_all(request):
     df.to_excel(response, index=False)
 
     return response
+
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        
+        user = request.user
+        user.username = username
+        user.email = email
+        user.save()
+        
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('edit_profile')
+        
+    return render(request, 'invoice/edit_profile.html')

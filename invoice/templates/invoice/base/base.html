@@ -11,7 +11,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Invoice Management</title>
+    <title>Invora - Dashboard</title>
 
     <!-- Custom fonts for this template-->
     <link href="{% static '/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -114,6 +114,24 @@
                     <span>Profit Calculator</span></a>
             </li>
 
+            <!-- Nav Item - Logout -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUser"
+                    aria-expanded="true" aria-controls="collapseUser">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <div id="collapseUser" class="collapse" aria-labelledby="headingUser" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item" href="{% url 'edit_profile' %}">Edit Profile</a>
+                        <a class="collapse-item" href="{% url 'password_change' %}">Change Password</a>
+                        <div class="collapse-divider"></div>
+                        <a class="collapse-item" href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </div>
+            </li>
+
+
             <!-- Divider -->
             <hr class="sidebar-divider">
 
@@ -146,6 +164,23 @@
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item dropdown no-arrow d-flex align-items-center">
+                            <span class="mr-3 d-none d-lg-inline text-primary"
+                                style="font-size: 1.5rem; font-family: 'Trebuchet MS', sans-serif;">
+                                Welcome, <b>{{ user.username }}</b>
+                            </span>
+                        </li>
+                    </ul>
+
+                    <!-- Topbar Navbar Right -->
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown no-arrow d-flex align-items-center">
+                            <img src="{% static 'img/invora_logo.png' %}" alt="Logo" style="height: 40px; width: auto;">
+                        </li>
+                    </ul>
                 </nav>
                 <!-- End of Topbar -->
 
@@ -246,13 +281,15 @@
             <!-- End of Main Content -->
 
             <!-- Footer -->
+            <!-- Footer -->
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
+                        <span>BUILD BY SREYAS</span>
                     </div>
                 </div>
             </footer>
+            <!-- End of Footer -->
             <!-- End of Footer -->
 
         </div>
