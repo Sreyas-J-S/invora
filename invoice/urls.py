@@ -22,6 +22,7 @@ urlpatterns = [
     # path('delete_customer/<int:pk>/', views.delete_customer, name='delete_customer'),
 
     path('create_invoice/', views.create_invoice, name='create_invoice'),
+    path('edit_invoice/<int:pk>/', views.edit_invoice, name='edit_invoice'),
     path('view_invoice/', views.view_invoice, name='view_invoice'),
     path('delete_invoice/<int:pk>/', views.delete_invoice, name='delete_invoice'),
     # path('delete_all_invoice/', views.delete_all_invoice,
@@ -29,6 +30,7 @@ urlpatterns = [
     # path('download_all_invoice/', views.download_all,
     #      name='download_all_invoice'),
     path('download_all_invoice/', views.download_all, name='download_all_invoice'),
+    path('invoice_pdf/<int:pk>/', views.download_invoice_pdf, name='invoice_pdf'),
     path('view_invoice_detail/<int:pk>/',
          views.view_invoice_detail, name='view_invoice_detail'),
     path('monthly_profit/', views.monthly_profit, name='monthly_profit'),

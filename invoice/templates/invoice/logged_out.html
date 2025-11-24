@@ -1,0 +1,13 @@
+{% extends "invoice/base/base.html" %}
+{% load static %}
+{% block content %}
+<div class="container" style="padding:40px 0;">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <img src="{% static 'img/invora_logo.png' %}" alt="Invora" style="width:80px;margin-bottom:20px;">
+            <h2>You are logged out</h2>
+            <p class="mt-3">You have successfully logged out. <a href="{% url 'login' %}">Log in again</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

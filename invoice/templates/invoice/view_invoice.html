@@ -22,12 +22,14 @@
                                 <th>Date</th>
                                 <th>Customer</th>
                                 <th>Total</th>
+                                <th>Profit</th>
+                                <th>Edit</th>
                                 <th>Detail</th>
                                 <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for i in invoice %}
+                            {% for i in invoices %}
                             <tr>
                                 <td style="padding: 0.45em;">
                                     {{i.id}}
@@ -41,15 +43,21 @@
                                 <td style="padding: 0.45em;">
                                     {{i.total}}
                                 </td>
-                                <td style="padding: 0;">
-                                    <a href="{% url 'view_invoice_detail' i.id %}" class="btn btn-outline-primary"
-                                        style="width: 100%; height: 100%; border-radius: 0">
-                                        <i class="fas fa-long-arrow-alt-right"></i>
+                                <td style="padding: 0.45em;">
+                                    {{i.total_profit}}
+                                </td>
+                                <td style="padding: 0.45em; text-align: center;">
+                                    <a href="{% url 'edit_invoice' i.id %}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-pen"></i>
                                     </a>
                                 </td>
-                                <td style="padding: 0;">
-                                    <a href="{% url 'delete_invoice' i.id %}" class="btn btn-outline-danger"
-                                        style="width: 100%; height: 100%; border-radius: 0">
+                                <td style="padding: 0.45em; text-align: center;">
+                                    <a href="{% url 'view_invoice_detail' i.id %}" class="btn btn-info btn-sm">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                </td>
+                                <td style="padding: 0.45em; text-align: center;">
+                                    <a href="{% url 'delete_invoice' i.id %}" class="btn btn-danger btn-sm">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </td>
@@ -61,4 +69,42 @@
         </div>
     </div>
 </div>
+
+<!-- Print Invoice Modal -->
+<div class="modal fade" id="printInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="printInvoiceModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printInvoiceModalLabel">Print Invoice?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Do you want to print the newly created invoice?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <a href="#" id="printInvoiceBtn" class="btn btn-primary" target="_blank">Yes</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+{% if new_invoice_id %}
+<script>
+    $(document).ready(function () {
+        $('#printInvoiceBtn').attr('href', "{% url 'invoice_pdf' new_invoice_id %}");
+        $('#printInvoiceModal').modal('show');
+
+        $('#printInvoiceBtn').click(function() {
+            $('#printInvoiceModal').modal('hide');
+        });
+    });
+</script>
+{% endif %}
 {% endblock %}

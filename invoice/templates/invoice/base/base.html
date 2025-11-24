@@ -126,7 +126,10 @@
                         <a class="collapse-item" href="{% url 'edit_profile' %}">Edit Profile</a>
                         <a class="collapse-item" href="{% url 'password_change' %}">Change Password</a>
                         <div class="collapse-divider"></div>
-                        <a class="collapse-item" href="{% url 'logout' %}">Logout</a>
+                        <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                            {% csrf_token %}
+                        </form>
+                        <a class="collapse-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                     </div>
                 </div>
             </li>

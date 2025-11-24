@@ -14,3 +14,4 @@ typing-extensions==3.10.0.2
 six==1.16.0
 openpyxl==3.0.10
 pandas
+fpdf2

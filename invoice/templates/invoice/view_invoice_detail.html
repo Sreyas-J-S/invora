@@ -8,6 +8,12 @@
             <!-- Card Header - Dropdown -->
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <label class="m-0 font-weight-bold text-primary">Products</label>
+                <a href="{% url 'edit_invoice' invoice.id %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-pen"></i> Edit Invoice
+                </a>
+                <a href="{% url 'invoice_pdf' invoice.id %}" class="btn btn-success btn-sm" target="_blank">
+                    <i class="fas fa-print"></i> Print
+                </a>
             </div>
             <!-- Card Body -->
             <div class="card-body">

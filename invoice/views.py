@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 from utils.filehandler import handle_file_upload
 from .forms import *
@@ -128,6 +130,73 @@ def create_invoice(request):
             invoice.total = total
             invoice.save()
             messages.success(request, "Invoice created successfully!")
+            invoice.total = total
+            invoice.save()
+            messages.success(request, "Invoice created successfully!")
+            return redirect(f"{reverse('view_invoice')}?new_invoice_id={invoice.id}")
+
+    context = {
+        "form": form,
+        "formset": formset,
+    }
+    return render(request, "invoice/create_invoice.html", context)
+
+
+@login_required
+def edit_invoice(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    form = InvoiceForm(instance=invoice)
+    
+    # Prepare initial data for formset
+    invoice_details = InvoiceDetail.objects.filter(invoice=invoice)
+    initial_data = []
+    for detail in invoice_details:
+        initial_data.append({
+            'product': detail.product,
+            'amount': detail.amount,
+        })
+    
+    formset = InvoiceDetailFormSet(initial=initial_data)
+    # We need to ensure the formset has enough forms for existing data
+    # formset.extra = 0 # Optional: don't show extra empty rows if we have data? 
+    # Actually, formset_factory with initial data will create forms for initial data + extra.
+    # But we want to populate them.
+    
+    # Better approach for formset with initial data:
+    # The formset_factory doesn't automatically bind model instances like inlineformset_factory.
+    # Since we are using a standard formset, we pass 'initial' list.
+    
+    if request.method == "POST":
+        form = InvoiceForm(request.POST, instance=invoice)
+        formset = InvoiceDetailFormSet(request.POST)
+        
+        if form.is_valid() and formset.is_valid():
+            invoice = form.save(commit=False)
+            invoice.save()
+
+            # Delete existing details to replace with new ones
+            # This is a simple strategy for "editing" - replace all items
+            InvoiceDetail.objects.filter(invoice=invoice).delete()
+
+            total = 0
+            for f in formset:
+                if f.cleaned_data:
+                    product = f.cleaned_data.get("product")
+                    amount = f.cleaned_data.get("amount")
+                    if product and amount:
+                        detail = InvoiceDetail(
+                            invoice=invoice,
+                            product=product,
+                            amount=amount,
+                            cost_price=product.cost_price,
+                            selling_price=product.selling_price
+                        )
+                        detail.save()
+                        total += detail.get_total_bill
+
+            invoice.total = total
+            invoice.save()
+            messages.success(request, "Invoice updated successfully!")
             return redirect("view_invoice")
 
     context = {
@@ -139,9 +208,13 @@ def create_invoice(request):
 
 @login_required
 def view_invoice(request):
-    invoices = Invoice.objects.all().order_by("-date")
+    invoices = Invoice.objects.all().order_by('-id')
+    
+    new_invoice_id = request.GET.get('new_invoice_id')
+    
     context = {
         "invoices": invoices,
+        "new_invoice_id": new_invoice_id,
     }
     return render(request, "invoice/view_invoice.html", context)
 
@@ -227,6 +300,7 @@ def download_all(request):
             'Email': invoice.email,
             'Comments': invoice.comments,
             'Total': invoice.total,
+            'Profit': invoice.total_profit,
         })
 
     # Create DataFrame
@@ -249,6 +323,12 @@ def edit_profile(request):
         email = request.POST.get('email')
         
         user = request.user
+        
+        # Check if username already exists for a different user
+        if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+            messages.error(request, 'Username already taken. Please choose another one.')
+            return redirect('edit_profile')
+
         user.username = username
         user.email = email
         user.save()
@@ -257,3 +337,18 @@ def edit_profile(request):
         return redirect('edit_profile')
         
     return render(request, 'invoice/edit_profile.html')
+
+
+@login_required
+def download_invoice_pdf(request, pk):
+    from .utils import generate_invoice_pdf
+    invoice = get_object_or_404(Invoice, pk=pk)
+    invoice_detail = InvoiceDetail.objects.filter(invoice=invoice)
+    
+    pdf_content = generate_invoice_pdf(invoice, invoice_detail)
+    
+    response = HttpResponse(bytes(pdf_content), content_type='application/pdf')
+    filename = "Invoice_%s.pdf" % (invoice.id)
+    content = "inline; filename='%s'" % (filename)
+    response['Content-Disposition'] = content
+    return response
